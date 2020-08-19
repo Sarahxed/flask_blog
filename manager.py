@@ -5,6 +5,7 @@ from apps import create_app
 from exts import db
 
 app = create_app()
+print(app.url_map)
 manager = Manager(app=app)
 migrate = Migrate(db=db, app=app)
 manager.add_command('db', MigrateCommand)

@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    用户注册
+{% endblock %}
+{% block styles %}
+    {{ super() }}
+    <style>
+        #container {
+            width: 1000px;
+            height: 600px;
+            margin: 0 auto;
+        }
+    </style>
+{% endblock %}
+
+{% block newcontent %}
+    <div id="container">
+        <h1>用户注册</h1><br>
+        <form method="POST" action="{{ url_for('user.register') }}">
+            <div class="form-group">
+                <label for="InputUsername" class="col-md-2 control-label">用户名</label>
+                <div class="col-md-4">
+                    <input type="text" class="form-control" id="InputUsername" placeholder="Username" name="username">
+                </div>
+            </div>
+            <br><br><br>
+
+            <div class="form-group">
+                <label for="InputPassword" class="col-md-2 control-label">密码</label>
+                <div class="col-md-4">
+                    <input type="password" class="form-control" id="InputPassword" placeholder="Password"
+                           name="password">
+                </div>
+            </div>
+            <br><br>
+
+            <div class="form-group">
+                <label for="InputConfirm" class="col-md-2 control-label">确认密码</label>
+                <div class="col-md-4">
+                    <input type="password" class="form-control" id="InputConfirm" placeholder="Confirm Password"
+                           name="confirmpwd">
+                </div>
+            </div>
+            <br><br><br>
+
+            <div class="form-group">
+                <label for="InputPhoneNumber" class="col-md-2  control-label">手机号码</label>
+                <div class="col-md-4">
+                    <input type="text" class="form-control" id="InputPhoneNumber" placeholder="Phone Number"
+                           name="phone">
+                </div>
+            </div>
+            <br><br>
+
+            <div class="form-group">
+                <label for="InputEmail" class="col-md-2  control-label">邮箱</label>
+                <div class="col-md-4">
+                    <input type="password" class="form-control" id="InputEmail" placeholder="Email" name="email">
+                </div>
+            </div>
+            <br><br><br>
+
+            <div class="form-group">
+                <div class="col-sd-offset-4 col-md-11">
+                    <button type="submit" class="btn btn-primary col-md-3">注&nbsp;&nbsp;&nbsp;册</button>
+                </div>
+            </div>
+            <br><br><br>
+        </form>
+    </div>
+
+{% endblock %}

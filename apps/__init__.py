@@ -9,7 +9,10 @@
 from flask import Flask
 
 import settings
+from apps.user.views import user_bp
 from exts import db, bootstrap
+from apps.user.models import User
+from apps.article.models import Comment, Article, Article_type
 
 
 def create_app():
@@ -18,4 +21,6 @@ def create_app():
     db.init_app(app=app)
     # 初始化bootstrap
     bootstrap.init_app(app=app)
+    # 注册蓝图
+    app.register_blueprint(user_bp)
     return app
