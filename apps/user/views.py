@@ -7,7 +7,7 @@
 @time  : 2020/8/14 16:40
 """
 from flask import Blueprint, render_template, request, jsonify, redirect, url_for
-from werkzeug.security import generate_password_hash
+from werkzeug.security import generate_password_hash, check_password_hash
 
 from apps.user.models import User
 from exts import db
@@ -18,7 +18,12 @@ user_bp = Blueprint('user', __name__, url_prefix='/user')
 @user_bp.route('/index', endpoint='index')
 def index():
     """首页"""
-    return render_template('user/index.html')
+    uid = request.cookies.get('uid', None)
+    if uid:
+        user = User.query.get(uid)
+        return render_template('user/index.html', user=user)
+    else:
+        return render_template('user/index.html')
 
 
 @user_bp.route('/register', methods=['POST', 'GET'], endpoint='register')
@@ -66,5 +71,27 @@ def is_valid_username():
 
 @user_bp.route('/login', methods=['POST', 'GET'], endpoint="login")
 def login():
-    msg = "登录"
-    return render_template('user/login.html', msg=msg)
+    """用户登录"""
+    if request.method == "POST":
+        username = request.form.get("username")
+        password = request.form.get('password')
+        users = User.query.filter(User.username == username).all()
+        for user in users:
+            flag = check_password_hash(user.password, password)
+            if flag:
+                response = redirect(url_for('user.index'))
+                response.set_cookie('uid', str(user.id), max_age=3600)
+                return response
+        else:
+            return render_template('user/login.html', msg="用户名或密码错误")
+
+    return render_template('user/login.html')
+
+
+@user_bp.route('/logout', endpoint='logout')
+def logout():
+    """退出登录"""
+    response = redirect(url_for('user.index'))
+    # 删除cookie
+    response.delete_cookie('uid')
+    return response

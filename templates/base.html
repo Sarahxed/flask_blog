@@ -6,7 +6,7 @@
     <style>
         body {
             background-image: url("{{ url_for('static', filename='images/bg1.jpeg') }}");
-            background-size:cover;
+            background-size: cover;
         }
 
         #myfooter {
@@ -35,7 +35,7 @@
 
 {% block navbar %}
     <div style="height: 80px"></div>
-        <nav class="navbar navbar-inverse">
+    <nav class="navbar navbar-inverse">
         <div class="container">
             <!-- Brand and toggle get grouped for better mobile display -->
             <div class="navbar-header">
@@ -45,7 +45,8 @@
             <!-- Collect the nav links, forms, and other content for toggling -->
             <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
                 <ul class="nav navbar-nav">
-                    <li class="active"><a href="{{ url_for('user.index') }}">首页<span class="sr-only">(current)</span></a></li>
+                    <li class="active"><a href="{{ url_for('user.index') }}">首页<span
+                            class="sr-only">(current)</span></a></li>
                     <li><a href="#">生活笔记</a></li>
                     <li class="dropdown">
                         <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
@@ -69,8 +70,20 @@
                     <button type="submit" class="btn btn-default">搜索</button>
                 </form>&nbsp;&nbsp;&nbsp;
                 <ul class="nav navbar-nav navbar-right">
-                    <li><a href="{{ url_for('user.login') }}">登录</a></li>
-                    <li><a href="{{ url_for('user.register') }}">注册</a></li>
+                    {% if user %}
+                        <li class="dropdown">
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button"
+                               aria-haspopup="true" aria-expanded="false">欢迎! {{ user.username }}<span class="caret"></span></a>
+                            <ul class="dropdown-menu">
+                                <li><a href="#">用户中心</a></li>
+                                <li role="separator" class="divider"></li>
+                                <li><a href="{{ url_for('user.logout') }}">退出</a></li>
+                            </ul>
+                        </li>
+                    {% else %}
+                        <li><a href="{{ url_for('user.login') }}">登录</a></li>
+                        <li><a href="{{ url_for('user.register') }}">注册</a></li>
+                    {% endif %}
                 </ul>
             </div><!-- /.navbar-collapse -->
         </div><!-- /.container-fluid -->
