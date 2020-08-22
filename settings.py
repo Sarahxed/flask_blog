@@ -16,6 +16,7 @@ class BaseConfig(object):
     # mysql+pymysql://user:password@hostip:port/database
     SQLALCHEMY_TRACK_MODIFICATIONS = True
     SQLALCHEMY_ECHO = True  # 调试设置为true
+    SECRET_KEY = 'DDFGGSWKMDOE'
 
 
 class DevelopmentConfig(BaseConfig):

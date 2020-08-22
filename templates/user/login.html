@@ -57,9 +57,8 @@
         </div>
         <div class="logintab">
             <p class="tips">{{ msg }}</p>
-            <form class="form-horizontal" method="post" action="{{ url_for('user.login') }}?f=1">
+            <form class="form-horizontal" method="POST" action="{{ url_for('user.login') }}?f=1">
                 <div class="form-group">
-
                     <div class="col-md-6 col-md-offset-3">
                         <input type="text" class="form-control" id="inputUsername" placeholder="username"
                                name="username">
@@ -125,7 +124,24 @@
                 })
             });
 
-            {#// 发送验证码#}
+            // 发送验证码
+            $("#btnCheck").click(function () {
+                let phone = $('#inputPhone').val()
+                let span_obj = $('#inputPhone').next('span');
+                span_obj.css({'color': 'red', 'font-size': '12px'});
+                if(phone.length==11){
+                    $.get('{{ url_for('user.send_message') }}', {phone: phone}, function (data) {
+                        if(data.code==200){
+                            alert("短信发送成功请查收！");
+                        }else{
+                            alert(data.msg);
+                        }
+                    })
+                } else{
+                    span_obj.text('必须输入11位手机号码')
+                }
+            })
+            })
             {#$('#btnCheck').click(function () {#}
             {#    let phone = $('#inputPhone').val();#}
             {#    let span_obj = $('#inputPhone').next('span');#}
@@ -138,10 +154,10 @@
             {#    } else {#}
             {#        span_obj.text('必须输入11位手机号码')#}
             {#    }#}
-            {#});
-        #}
-        }
-        )
+
+{#        #}
+{#        }#}
+{#        )#}
 
     </script>
 {% endblock %}
