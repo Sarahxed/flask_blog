@@ -79,6 +79,7 @@ def login():
         for user in users:
             flag = check_password_hash(user.password, password)
             if flag:
+                # cookie实现机制
                 response = redirect(url_for('user.index'))
                 response.set_cookie('uid', str(user.id), max_age=3600)
                 return response
