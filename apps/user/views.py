@@ -6,28 +6,64 @@
 @file  : views.py
 @time  : 2020/8/14 16:40
 """
-from flask import Blueprint, render_template, request, jsonify, redirect, url_for, session
-from werkzeug.security import generate_password_hash, check_password_hash
+import os
 
+from flask import Blueprint, render_template, request, jsonify, redirect, url_for, session, g
+from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.utils import secure_filename
+
+from apps.article.models import Article_type, Article
 from apps.user.models import User
 from apps.user.send_message import util_sendmsg
 from exts import db
+from settings import config
 
 user_bp = Blueprint('user', __name__, url_prefix='/user')
 
+required_login_list = ['/user/center', '/user/update_info', '/article/article_publish']
 
-@user_bp.route('/index', endpoint='index')
+
+@user_bp.before_app_request
+def before_request():
+    if request.path in required_login_list:
+        id = session.get('uid')
+        if not id:
+            return render_template('user/login.html')
+        else:
+            user = User.query.get(id)
+            g.user = user
+
+
+@user_bp.app_template_filter('cdecode')
+def content_decode(content):
+    content = content.decode('utf-8')
+    return content[:200] + "......"
+
+
+@user_bp.app_template_filter('ddecode')
+def content_decode(content):
+    content = content.decode('utf-8')
+    return content
+
+
+@user_bp.route('/index',  endpoint='index')
 def index():
     """首页"""
     # cookie获取
     # uid = request.cookies.get('uid', None)
     # session获取
     uid = session.get('uid', None)
+    # 获取文章列表
+    page = int(request.args.get('page', default=1))
+    pagination = Article.query.order_by(Article.pdatetime).paginate(page=page, per_page=3)
+    # 获取分类列表
+    types = Article_type.query.all()
+    # 判断用户是否登录
     if uid:
         user = User.query.get(uid)
-        return render_template('user/index.html', user=user)
+        return render_template('user/index.html', user=user, pagination=pagination, types=types)
     else:
-        return render_template('user/index.html')
+        return render_template('user/index.html', pagination=pagination, types=types)
 
 
 @user_bp.route('/register', methods=['POST', 'GET'], endpoint='register')
@@ -114,7 +150,6 @@ def login():
                     return render_template('user/login.html', msg="此号码未注册！")
             else:
                 return render_template('user/login.html', msg="验证码有误！")
-
     return render_template('user/login.html')
 
 
@@ -141,3 +176,39 @@ def logout():
     # del session['uid']  # 只删除值 不删除空间
     session.clear()  # 值和空间都删除python
     return response
+
+
+@user_bp.route('/center', endpoint='center')
+def center():
+    types = Article_type.query.all()
+    return render_template('user/center.html', user=g.user, types=types)
+
+
+@user_bp.route('/update_info', methods=['POST', 'GET'], endpoint='update_info')
+def update_info():
+    """用户信息修改"""
+    if request.method == 'POST':
+        username = request.form.get('username')
+        phone = request.form.get('phone')
+        email = request.form.get('email')
+        icon = request.files.get('icon')
+        icon_name = icon.filename
+        print(icon_name)
+        icon_type = icon_name.rsplit('.')[-1]
+        if icon_type in config.ALLOWED_EXTENSIONS:
+            icon_name = secure_filename(icon_name)
+            print(icon_name)
+            file_path = os.path.join(config.UPLOAD_ICON_DIR, icon_name)
+            icon.save(file_path)
+            # 数据库更新
+            user = g.user
+            user.username = username
+            user.phone = phone
+            user.email = email
+            user.icon = "upload/icon/{}".format(icon_name)
+            db.session.commit()
+            return redirect(url_for('user.center'))
+        else:
+            return render_template('user/center.html', user=g.user, msg="扩展名必须是jpg, png, git, jpeg, bmp")
+    else:
+        return render_template('user/center.html', user=g.user)
