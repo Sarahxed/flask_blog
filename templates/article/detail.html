@@ -92,52 +92,52 @@
             <div id="comment">
                 <p>文章评论:</p>
                 <div>
-                    <p>
-                    <textarea name="content" class="form-control" style="width: 60%" rows="5" cols="60">写下你想说的，开始我们的对话
-                    </textarea>
-                    </p>
-                    <p><input type="button" value="评论" class="btn btn-info"></p>
-
+                    <form action="{{ url_for('article.add_comment') }}" method="post">
+                        <input type="hidden" name="aid" value="{{ article.id }}">
+                        <p>
+                            <textarea name="comment" class="form-control" style="width: 60%" rows="5" cols="60">写下你想说的，开始我们的对话</textarea>
+                        </p>
+                        <p>
+                            <button type="submit" class="btn btn-primary">发表评论</button>
+                    </form>
                 </div>
                 <p style="margin: 20px 5px; border-bottom: 1px solid lightgray">
 
                 </p>
                 <div id="comment_item">
-                    <div class="item">
-                        <div id="item_left">
-                            <img src="{{ url_for('static',filename='images/touxiang.jpg') }}" alt="">
+                    {% if comments.items %}
+                        {% for comment in comments.items %}
+                            <div class="item">
+                                <div id="item_left">
+                                    <img src=" {% if comment.user.icon %} {{ url_for('static',filename=comment.user.icon) }} {% else %}{{ url_for('static',filename='images/动漫女头.jpg') }}{% endif %}">
+                                </div>
+                                <div id="item_right">
+                                    <p>
+                                        <span>{{ comment.user.username }}</span>
+                                        <span>{{ comment.cdatetime }}</span>
+                                    </p>
+                                    <p>
+                                        {{ comment.comment }}
+                                    </p>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="item">
+                            当前文章还没任何评论，赶快发表意见吧~
                         </div>
-                        <div id="item_right">
-                            <p>
-                                <span>匿名用户</span>
-                                <span>2020-05-31 12:30:55</span>
-                            </p>
-                            <p>
-                                很喜欢你的博客文章，加油啊！
-                            </p>
-                        </div>
-                    </div>
-                    <div class="item">
-                        <div id="item_left">
-                            <img src="{{ url_for('static',filename='images/touxiang.jpg') }}" alt="">
-                        </div>
-                        <div id="item_right">
-                            <p>
-                                <span>匿名用户</span>
-                                <span>2020-05-31 12:30:55</span>
-                            </p>
-                            <p>
-                                分析得很棒！
-                            </p>
-                        </div>
-                    </div>
+                    {% endif %}
                 </div>
                 <div id="paginate">
                     <nav aria-label="...">
                         <ul class="pager">
-                            <li class="previous disabled"><a href="#"><span aria-hidden="true">&larr;</span> Older</a>
+                            <li class="previous" {% if not comments.has_prev %} class="disabled" {% endif %}>
+                                <a href="{{ url_for('article.article_detail') }}?page={{ comments.prev_num }}&aid={{ article.id }}"><span
+                                        aria-hidden="true">&larr;</span>上一页</a>
                             </li>
-                            <li class="next"><a href="#">Newer <span aria-hidden="true">&rarr;</span></a></li>
+                            <li class="next"><a
+                                    href="{{ url_for('article.article_detail') }}?page={{ comments.next_num }}&aid={{ article.id }}">下一页<span
+                                    aria-hidden="true">&rarr;</span></a></li>
                         </ul>
                     </nav>
 
@@ -184,6 +184,10 @@
                 $this.css({'color': 'red'})
                 $this.next('span').attr('tag', "1")
             }
+        });
+        //文本域
+        $('textarea[name="comment"]').focus(function () {
+            $(this).val("")
         });
     </script>
 

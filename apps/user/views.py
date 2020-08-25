@@ -13,14 +13,21 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 
 from apps.article.models import Article_type, Article
-from apps.user.models import User
-from apps.user.send_message import util_sendmsg
+from apps.user.models import User, AboutMe, MessageBoard
+from apps.utils import util_sendmsg
 from exts import db
 from settings import config
 
 user_bp = Blueprint('user', __name__, url_prefix='/user')
 
-required_login_list = ['/user/center', '/user/update_info', '/article/article_publish']
+required_login_list = ['/user/center',
+                       '/user/update_info',
+                       '/article/article_publish',
+                       '/article/article_detail',
+                       '/article/add_comment',
+                       '/user/about_me',
+                       '/user/show_about'
+                       ]
 
 
 @user_bp.before_app_request
@@ -46,7 +53,7 @@ def content_decode(content):
     return content
 
 
-@user_bp.route('/index',  endpoint='index')
+@user_bp.route('/index', endpoint='index')
 def index():
     """首页"""
     # cookie获取
@@ -114,16 +121,12 @@ def login():
     """用户登录"""
     if request.method == "POST":
         f = request.args.get('f')
-        print(f)
         if f == str(1):  # 用用户名和密码登录
             username = request.form.get("username")
             password = request.form.get('password')
-            print(username, password)
             users = User.query.filter(User.username == username).all()
-            print(users)
             for user in users:
                 flag = check_password_hash(user.password, password)
-                print("flag:", flag)
                 if flag:
                     # cookie实现机制
                     # response = redirect(url_for('user.index'))
@@ -212,3 +215,59 @@ def update_info():
             return render_template('user/center.html', user=g.user, msg="扩展名必须是jpg, png, git, jpeg, bmp")
     else:
         return render_template('user/center.html', user=g.user)
+
+
+@user_bp.route('/about_me', methods=['POST', 'GET'], endpoint='about_me')
+def about_me():
+    """添加我的信息"""
+    try:
+        content = request.form.get('about')
+        aboutme = AboutMe()
+        aboutme.content = content.encode('utf-8')
+        aboutme.user_id = g.user.id
+        db.session.add(aboutme)
+        db.session.commit()
+        return render_template('user/about_me.html', user=g.user)
+    except Exception as e:
+        return render_template('user/center.html')
+
+
+@user_bp.route('/show_about', methods=['POST', 'GET'], endpoint='show_about')
+def show_about():
+    """展示我的信息，权限验证"""
+    return render_template('user/about_me.html', user=g.user)
+
+
+@user_bp.route('/board', methods=['POST', 'GET'], endpoint='board')
+def show_board():
+    page = int(request.args.get('page', 1))
+    boards = MessageBoard.query.order_by(-MessageBoard.mdatetime).paginate(page=page, per_page=5)
+    # 获取登录信息
+    uid = session.get('uid', None)
+    user = None
+    if uid:
+        user = User.query.get(uid)
+    if request.method == "POST":
+        content = request.form.get('board')
+        msg_board = MessageBoard()
+        msg_board.content = content
+        if uid:
+            msg_board.user_id = uid
+        db.session.add(msg_board)
+        db.session.commit()
+        return redirect(url_for('user.board'))
+    else:
+
+        return render_template('user/board.html', user=user, boards=boards)
+
+
+@user_bp.route('/del_board', methods=['POST', 'GET'], endpoint='del_board')
+def del_board():
+    bid = request.args.get('bid')
+    if bid:
+        msg_board = MessageBoard.query.get(bid)
+        db.session.delete(msg_board)
+        db.session.commit()
+        return redirect(url_for('user.center'))
+
+

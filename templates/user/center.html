@@ -11,7 +11,6 @@
         <div id="left">
             <p>用户信息修改</p>
             <p>发表文章</p>
-            <p>管理相册</p>
             <p>管理留言</p>
             <p>关于我设置</p>
         </div>
@@ -40,7 +39,7 @@
 
                 </form>
             </div>
-             <div class="right1" style="padding-top: 20px">
+            <div class="right1" style="padding-top: 20px">
                 <form action="{{ url_for('article.publish_article') }}" method="post">
                     <p><input type="text" class="form-control" id="InputTitle" name="title"
                               placeholder="请输入文章标题">
@@ -66,9 +65,45 @@
 
                 </form>
             </div>
+            <div class="right1" style="padding-top: 30px;width: 90%">
+                {% if user.messages %}
+                    <table class="table table-hover">
+                        <tr>
+                            <th>序号</th>
+                            <th>留言</th>
+                            <th>时间</th>
+                            <th>操作</th>
+                        </tr>
+                        {% for message in user.messages %}
+                            <tr {% if loop.index%2==0 %}class="warning" {% endif %}>
+                                <td>{{ loop.index }}</td>
+                                <td>{{ message.content }}</td>
+                                <td>{{ message.mdatetime }}</td>
+                                <td><a href="{{ url_for('user.del_board') }}?bid={{ message.id }}">删除留言</a></td>
+                            </tr>
+                        {% endfor %}
 
+
+                    </table>
+                {% else %}
+                    <p>还没有任何内容，可以去留言板去发言...</p>
+                {% endif %}
+            </div>
+            <div class="right1" style="padding-top: 20px">
+                <form action="{{ url_for('user.about_me') }}" method="post">
+                    <p>
+                        <textarea name="about" class="mytextarea">
+
+                        </textarea>
+                    </p>
+                    <p></p>
+                    <p style="text-align: right;">
+                        <button type="submit" class="btn btn-primary">关于我的</button>
+                    </p>
+
+                </form>
+            </div>
         </div>
-    </div>
     </div>
 {% endblock %}
 
